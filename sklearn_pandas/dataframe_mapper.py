@@ -183,6 +183,7 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
         elif isinstance(X, DataWrapper):
             X = X.df  # fetch underlying data
 
+        # commenting out to see what happens
         if return_vector:
             t = X[cols[0]]
         else:
@@ -192,7 +193,7 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
         if input_df:
             return t
         else:
-            return t.values
+            return t.values.reshape(-1,1)
 
     def fit(self, X, y=None):
         """
@@ -210,6 +211,9 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
             if transformers is not None:
                 with add_column_names_to_exception(columns):
                     Xt = self._get_col_subset(X, columns, input_df)
+                    if Xt.ndim == 1:
+                        # convert to 2d
+                        Xt = Xt.reshape(-1,1)
                     _call_fit(transformers.fit, Xt, y)
 
         # handle features not explicitly selected
@@ -300,6 +304,9 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
             # strings; we don't care because pandas
             # will handle either.
             Xt = self._get_col_subset(X, columns, input_df)
+            if Xt.ndim == 1:
+                # convert to 2d
+                Xt = Xt.reshape(-1,1)
             if transformers is not None:
                 with add_column_names_to_exception(columns):
                     if do_fit and hasattr(transformers, 'fit_transform'):
@@ -321,6 +328,9 @@ class DataFrameMapper(BaseEstimator, TransformerMixin):
         if self.built_default is not False:
             unsel_cols = self._unselected_columns(X)
             Xt = self._get_col_subset(X, unsel_cols, self.input_df)
+            if Xt.ndim == 1:
+                # convert to 2d
+                Xt = Xt.reshape(-1,1)
             if self.built_default is not None:
                 with add_column_names_to_exception(unsel_cols):
                     if do_fit and hasattr(self.built_default, 'fit_transform'):
